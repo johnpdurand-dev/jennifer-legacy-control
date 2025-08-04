@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Legacy Control">
+    <title>Legacy Control - Jennifer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1em;
+        }
+
+        .status-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .status-good {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.3), rgba(139, 195, 74, 0.3));
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .status-alert {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.3), rgba(233, 30, 99, 0.3));
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+
+        .status-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .pnl-display {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .pnl-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .emergency-section {
+            margin-top: auto;
+            margin-bottom: 20px;
+        }
+
+        .emergency-btn {
+            background: linear-gradient(135deg, #F44336, #D32F2F);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .emergency-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 15px 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-top: 20px;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* iOS Safari specific styles */
+        @supports (-webkit-touch-callout: none) {
+            .container {
+                padding-top: 40px;
+            }
+        }
+
+        /* Notification popup */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        .approval-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .approval-content {
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .approval-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .approve-btn {
+            background: linear-gradient(135deg, #4CAF50, #45A049);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .deny-btn {
+            background: linear-gradient(135deg, #F44336, #D32F2F);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Legacy Trading System</h1>
+            <p>Jennifer's Control Center</p>
+        </div>
+        
+        <div class="status-card status-good" id="statusCard">
+            <div class="status-icon" id="statusIcon">🟢</div>
+            <div class="status-text" id="statusText">System Running Normally</div>
+            <div class="pnl-display" id="pnlDisplay">+$247.50</div>
+            <div class="pnl-label">Today's Performance</div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Current Position</div>
+                <div class="info-value" id="positionDisplay">3 AMD shares</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Last Activity</div>
+                <div class="info-value" id="lastActivityDisplay">2 min ago</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">System Status</div>
+                <div class="info-value" id="systemHealth">Healthy</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Trading Mode</div>
+                <div class="info-value" id="tradingMode">Stock</div>
+            </div>
+        </div>
+        
+        <div class="control-buttons">
+            <button class="control-btn" onclick="refreshData()">
+                <span id="refreshIcon">🔄</span> Refresh
+            </button>
+            <button class="control-btn" onclick="viewHistory()">
+                📊 History
+            </button>
+        </div>
+        
+        <div class="emergency-section">
+            <button class="emergency-btn" onclick="emergencyStop()">
+                🚨 Emergency Stop
+            </button>
+        </div>
+        
+        <div class="footer">
+            <div>Last updated: <span id="lastUpdate">Just now</span></div>
+            <div style="margin-top: 5px;">Built with ❤️ for Jennifer</div>
+        </div>
+    </div>
+
+    <!-- Notification popup -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Approval popup -->
+    <div class="approval-popup" id="approvalPopup">
+        <div class="approval-content">
+            <h2>🤖 System Needs Approval</h2>
+            <div style="margin: 20px 0;">
+                <div id="approvalDescription" style="font-size: 1.2em; margin-bottom: 15px;">
+                    Claude wants to buy 1 more AMD share
+                </div>
+                <div style="opacity: 0.8;">
+                    <strong>Why:</strong> <span id="approvalReason">Strong buy signal detected</span><br>
+                    <strong>Risk:</strong> <span id="approvalRisk" style="color: #4CAF50;">Low</span>
+                </div>
+            </div>
+            <div class="approval-buttons">
+                <button class="deny-btn" onclick="handleApproval(false)">❌ Deny</button>
+                <button class="approve-btn" onclick="handleApproval(true)">✅ Approve</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // System data - will be replaced with real data from FastAPI
+        let systemData = {
+            status: 'good',
+            pnl: 247.50,
+            position: '3 AMD shares',
+            lastActivity: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
+            systemHealth: 'Healthy',
+            tradingMode: 'Stock',
+            dailyTrades: 5,
+            successRate: 100
+        };
+
+        let currentApprovalRequest = null;
+
+        // Mock approval requests for demo
+        const mockApprovals = [
+            {
+                id: 1,
+                description: "Buy 1 more AMD share",
+                reason: "Strong buy signal detected",
+                risk: "Low",
+                riskColor: "#4CAF50"
+            },
+            {
+                id: 2,
+                description: "Tighten stop loss to $0.15",
+                reason: "Better protection in volatile market",
+                risk: "Very Low",
+                riskColor: "#4CAF50"
+            },
+            {
+                id: 3,
+                description: "Switch to options trading",
+                reason: "Higher profit potential identified",
+                risk: "Medium",
+                riskColor: "#FF9800"
+            }
+        ];
+
+        function updateDisplay() {
+            const statusCard = document.getElementById('statusCard');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const pnlDisplay = document.getElementById('pnlDisplay');
+            const positionDisplay = document.getElementById('positionDisplay');
+            const lastActivityDisplay = document.getElementById('lastActivityDisplay');
+            const systemHealth = document.getElementById('systemHealth');
+            const tradingMode = document.getElementById('tradingMode');
+            const lastUpdate = document.getElementById('lastUpdate');
+            
+            // Update status
+            if (systemData.status === 'good') {
+                statusCard.className = 'status-card status-good';
+                statusIcon.textContent = '🟢';
+                statusText.textContent = 'System Running Normally';
+            } else if (systemData.status === 'stopped') {
+                statusCard.className = 'status-card status-alert';
+                statusIcon.textContent = '🛑';
+                statusText.textContent = 'EMERGENCY STOP ACTIVE';
+            } else {
+                statusCard.className = 'status-card status-alert';
+                statusIcon.textContent = '🔴';
+                statusText.textContent = 'System Needs Attention';
+            }
+            
+            // Update P&L with proper formatting
+            const pnlValue = systemData.pnl;
+            const pnlColor = pnlValue >= 0 ? '#4CAF50' : '#F44336';
+            pnlDisplay.textContent = (pnlValue >= 0 ? '+' : '') + '$' + Math.abs(pnlValue).toFixed(2);
+            pnlDisplay.style.color = pnlColor;
+            
+            positionDisplay.textContent = systemData.position;
+            systemHealth.textContent = systemData.systemHealth;
+            tradingMode.textContent = systemData.tradingMode;
+            
+            // Calculate time since last activity
+            const timeDiff = Math.floor((new Date() - systemData.lastActivity) / 60000);
+            if (timeDiff === 0) {
+                lastActivityDisplay.textContent = 'Just now';
+            } else if (timeDiff < 60) {
+                lastActivityDisplay.textContent = timeDiff + ' min ago';
+            } else {
+                const hours = Math.floor(timeDiff / 60);
+                lastActivityDisplay.textContent = hours + 'h ago';
+            }
+            
+            lastUpdate.textContent = new Date().toLocaleTimeString();
+        }
+
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        function emergencyStop() {
+            if (confirm('⚠️ EMERGENCY STOP CONFIRMATION ⚠️\n\nThis will immediately:\n• Stop all trading\n• Close current positions safely\n• Put system in safe mode\n\nYou will receive text confirmation.\n\nPress OK to confirm EMERGENCY STOP')) {
+                
+                // Show immediate visual feedback
+                const statusCard = document.getElementById('statusCard');
+                const statusIcon = document.getElementById('statusIcon');
+                const statusText = document.getElementById('statusText');
+                
+                statusCard.className = 'status-card status-alert';
+                statusIcon.textContent = '🛑';
+                statusText.textContent = 'EMERGENCY STOP ACTIVATED';
+                
+                systemData.status = 'stopped';
+                systemData.systemHealth = 'Stopped';
+                updateDisplay();
+                
+                // Show loading state
+                const refreshIcon = document.getElementById('refreshIcon');
+                refreshIcon.innerHTML = '<span class="loading">⟳</span>';
+                
+                // Simulate API call (will be real FastAPI call)
+                setTimeout(() => {
+                    refreshIcon.textContent = '🔄';
+                    showNotification('✅ Emergency stop successful! System is safe.', 5000);
+                    
+                    // Send mock SMS notification
+                    console.log('SMS sent to Jennifer: Emergency stop activated. All trading halted. System is safe.');
+                    console.log('SMS sent to you: Jennifer activated emergency stop via control app.');
+                }, 2000);
+            }
+        }
+
+        function refreshData() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.innerHTML = '<span class="loading">⟳</span>';
+            
+            // Simulate API call to your FastAPI
+            setTimeout(() => {
+                // Mock data updates
+                systemData.lastActivity = new Date();
+                
+                // Randomly update P&L slightly for demo
+                if (systemData.status === 'good') {
+                    const change = (Math.random() - 0.5) * 20; // Random change of +/- $10
+                    systemData.pnl = Math.max(-500, Math.min(500, systemData.pnl + change));
+                }
+                
+                updateDisplay();
+                refreshIcon.textContent = '🔄';
+                showNotification('Data refreshed');
+            }, 1500);
+        }
+
+        function viewHistory() {
+            const historyText = `Recent Trading Activity:\n\n` +
+                              `📈 2:34 PM - Bought 1 AMD share at $142.30\n` +
+                              `📉 1:15 PM - Sold 2 AMD shares at $141.85\n` +
+                              `📈 11:22 AM - Bought 3 AMD shares at $140.50\n` +
+                              `🟢 9:30 AM - System started for the day\n\n` +
+                              `📊 Today's Summary:\n` +
+                              `• Total trades: ${systemData.dailyTrades}\n` +
+                              `• Success rate: ${systemData.successRate}%\n` +
+                              `• Net P&L: $${systemData.pnl.toFixed(2)}`;
+            
+            alert(historyText);
+        }
+
+        function showApprovalRequest() {
+            if (mockApprovals.length === 0) return;
+            
+            const request = mockApprovals[Math.floor(Math.random() * mockApprovals.length)];
+            currentApprovalRequest = request;
+            
+            document.getElementById('approvalDescription').textContent = request.description;
+            document.getElementById('approvalReason').textContent = request.reason;
+            document.getElementById('approvalRisk').textContent = request.risk;
+            document.getElementById('approvalRisk').style.color = request.riskColor;
+            
+            document.getElementById('approvalPopup').style.display = 'flex';
+        }
+
+        function handleApproval(approved) {
+            document.getElementById('approvalPopup').style.display = 'none';
+            
+            if (approved) {
+                showNotification('✅ Change approved and executed!');
+                console.log('Approved:', currentApprovalRequest);
+            } else {
+                showNotification('❌ Change cancelled');
+                console.log('Denied:', currentApprovalRequest);
+            }
+            
+            currentApprovalRequest = null;
+            
+            // Refresh data after approval
+            setTimeout(refreshData, 1000);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (systemData.status === 'good') {
+                refreshData();
+            }
+        }, 30000);
+
+        // Demo: Show approval request every 2 minutes
+        setInterval(() => {
+            if (systemData.status === 'good' && Math.random() > 0.7) {
+                showApprovalRequest();
+            }
+        }, 120000);
+
+        // Initial load
+        updateDisplay();
+        
+        // Show welcome message
+        setTimeout(() => {
+            showNotification('Welcome, Jennifer! System is ready.');
+        }, 1000);
+
+        // Demo: Show first approval after 10 seconds for testing
+        setTimeout(() => {
+            if (confirm('Demo Mode: Would you like to see how the approval system works?')) {
+                showApprovalRequest();
+            }
+        }, 10000);
+
+        // Handle page visibility for better mobile experience
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                refreshData();
+            }
+        });
+
+        // PWA installation prompt handling
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button or prompt after some interaction
+            setTimeout(() => {
+                if (confirm('Would you like to install this app on your home screen for easier access?')) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            showNotification('App installed! Look for Legacy Control on your home screen.');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
